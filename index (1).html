@@ -1,0 +1,1940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0E1116">
+<title>Training Block</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400;12..96,75..100,600;12..96,75..100,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0E1116; --slab:#161B22; --slab-2:#1C232C; --line:#252E39;
+    --chalk:#E8EDF2; --steel:#8A97A6; --steel-dim:#5D6875;
+    --strength:#E33B3B; --accessory:#3B7BE8; --conditioning:#F0C419;
+    --green:#4ADE80;
+    --radius:14px; --pad:16px;
+    --display:"Bricolage Grotesque",system-ui,sans-serif;
+    --body:"Inter",system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--ink);color:var(--chalk);font-family:var(--body);
+    font-feature-settings:"tnum" 1;line-height:1.45;
+    padding-bottom:env(safe-area-inset-bottom);overscroll-behavior-y:none;
+  }
+  button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+  :focus-visible{outline:2px solid var(--chalk);outline-offset:2px;border-radius:6px}
+
+  header{
+    position:sticky;top:0;z-index:20;background:rgba(14,17,22,.92);
+    backdrop-filter:blur(12px);border-bottom:1px solid var(--line);
+    padding-top:env(safe-area-inset-top);
+  }
+  .bar{display:flex;align-items:center;gap:10px;padding:12px var(--pad) 10px}
+  .title{
+    font-family:var(--display);font-weight:800;font-size:17px;
+    letter-spacing:-.02em;line-height:1.15;flex:1;min-width:0;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .icon-btn{
+    width:38px;height:38px;flex:none;border:1px solid var(--line);
+    border-radius:10px;display:grid;place-items:center;color:var(--steel);
+    transition:border-color .15s,color .15s;position:relative;
+  }
+  .icon-btn:hover{color:var(--chalk);border-color:var(--steel-dim)}
+  .icon-btn.syncing svg{animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .weeks{display:flex;gap:6px;padding:0 var(--pad) 10px;overflow-x:auto;scrollbar-width:none}
+  .weeks::-webkit-scrollbar{display:none}
+  .wk{
+    flex:none;min-width:44px;padding:7px 10px 6px;border:1px solid var(--line);
+    border-radius:9px;font-size:12px;font-weight:600;color:var(--steel);
+    text-align:center;position:relative;transition:background .15s,color .15s,border-color .15s;
+  }
+  .wk b{display:block;font-family:var(--display);font-size:15px;font-weight:800;line-height:1.1}
+  .wk small{font-size:9px;letter-spacing:.08em;text-transform:uppercase;opacity:.75}
+  .wk.on{background:var(--chalk);color:var(--ink);border-color:var(--chalk)}
+  .wk.deload:not(.on){border-color:#3a3320;color:#C9B369}
+  .wk .dot{position:absolute;top:5px;right:5px;width:5px;height:5px;border-radius:50%;background:var(--green);opacity:0}
+  .wk.done .dot{opacity:1}
+
+  .days{display:flex;gap:8px;padding:0 var(--pad) 12px}
+  .day{
+    flex:1;border:1px solid var(--line);border-radius:10px;padding:9px 8px 8px;
+    text-align:left;position:relative;overflow:hidden;transition:border-color .15s,background .15s;
+  }
+  .day.on{background:var(--slab-2);border-color:var(--steel-dim)}
+  .day .lbl{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel-dim);font-weight:600}
+  .day .nm{font-family:var(--display);font-weight:800;font-size:14px;letter-spacing:-.01em;color:var(--steel);margin-top:1px}
+  .day.on .nm{color:var(--chalk)}
+  .day .prog{position:absolute;left:0;bottom:0;height:2px;background:var(--green);transition:width .3s ease}
+
+  main{padding:18px var(--pad) 96px;max-width:640px;margin:0 auto}
+
+  .banner{
+    display:flex;align-items:center;gap:9px;border-radius:10px;
+    padding:9px 12px;margin-bottom:16px;font-size:12px;
+    background:var(--slab);border:1px solid var(--line);color:var(--steel);
+  }
+  .banner.warn{background:rgba(240,196,25,.07);border-color:rgba(240,196,25,.22);color:#E3CE81}
+  .banner svg{flex:none}
+
+  .sect{margin-bottom:22px}
+  .sect-head{display:flex;align-items:center;gap:9px;margin-bottom:9px;padding-left:2px}
+  .chip{width:9px;height:9px;border-radius:2px;flex:none;transform:rotate(45deg)}
+  .sect-head h2{margin:0;font-family:var(--display);font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--steel)}
+  .sect-head .n{margin-left:auto;font-size:11px;color:var(--steel-dim);font-weight:600}
+
+  .card{
+    background:var(--slab);border:1px solid var(--line);
+    border-left:3px solid var(--sc,var(--line));border-radius:var(--radius);
+    padding:14px;margin-bottom:9px;transition:opacity .2s;
+  }
+  .card.done{opacity:.5}
+  .card.done .move{text-decoration:line-through;text-decoration-thickness:1.5px}
+  .card-top{display:flex;gap:12px;align-items:flex-start}
+  .move{flex:1;font-family:var(--display);font-weight:600;font-size:16.5px;letter-spacing:-.015em;line-height:1.28;margin:0}
+  .tick{
+    flex:none;width:30px;height:30px;margin-top:-1px;border:1.5px solid var(--line);
+    border-radius:9px;display:grid;place-items:center;color:transparent;transition:all .15s;
+  }
+  .tick:hover{border-color:var(--steel-dim)}
+  .card.done .tick{background:var(--green);border-color:var(--green);color:var(--ink)}
+
+  .stats{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
+  .stat{background:var(--slab-2);border-radius:8px;padding:6px 10px 5px;min-width:52px}
+  .stat .k{display:block;font-size:8.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--steel-dim);font-weight:600}
+  .stat .v{display:block;font-family:var(--display);font-weight:800;font-size:16px;letter-spacing:-.02em;line-height:1.2}
+  .stat.load{background:transparent;border:1px solid var(--sc);padding:6px 12px 5px}
+  .stat.load .v{color:var(--sc)}
+  .stat.load .v small{font-size:10px;font-weight:600;opacity:.7;margin-left:1px}
+
+  .bb{margin-top:11px}
+  .bb-track{display:flex;align-items:center;gap:2px;height:30px}
+  .sleeve{flex:none;width:14px;height:4px;background:var(--steel-dim);border-radius:2px}
+  .collar{flex:none;width:5px;height:16px;background:#4E5A68;border-radius:1px}
+  .plate{flex:none;border-radius:2px}
+  .bb-note{margin-top:6px;font-size:10.5px;color:var(--steel-dim)}
+  .bb-note em{font-style:normal;color:var(--steel)}
+
+  .note{margin-top:11px;padding-left:10px;border-left:2px solid var(--line);font-size:13px;color:var(--steel);line-height:1.5}
+
+  /* --- weight log --- */
+  .log{
+    margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  }
+  .log-in{
+    display:flex;align-items:center;gap:0;
+    border:1px solid var(--line);border-radius:10px;overflow:hidden;
+    background:var(--ink);
+  }
+  .log-in:focus-within{border-color:var(--sc)}
+  .log-in input{
+    width:78px;background:none;border:none;color:var(--chalk);
+    font-family:var(--display);font-weight:800;font-size:16px;
+    padding:9px 0 9px 11px;text-align:left;
+  }
+  .log-in input:focus{outline:none}
+  .log-in input::placeholder{color:var(--steel-dim);font-weight:600}
+  .log-in .u{padding:0 11px 0 2px;font-size:11px;font-weight:600;color:var(--steel-dim)}
+  .log-lbl{font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:var(--steel-dim);font-weight:600;width:100%;margin-bottom:-3px}
+  .last{
+    font-size:11.5px;color:var(--steel);line-height:1.35;
+  }
+  .last b{font-family:var(--display);font-weight:800;color:var(--chalk);font-size:13px}
+  .last span{display:block;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--steel-dim);font-weight:600}
+  .use-last{
+    border:1px solid var(--line);border-radius:8px;padding:6px 10px;
+    font-size:11px;font-weight:600;color:var(--steel);
+  }
+  .use-last:hover{color:var(--chalk);border-color:var(--steel-dim)}
+
+  .deload-flag{
+    display:flex;align-items:center;gap:9px;background:rgba(240,196,25,.07);
+    border:1px solid rgba(240,196,25,.22);border-radius:var(--radius);
+    padding:11px 13px;margin-bottom:18px;font-size:12.5px;color:#E3CE81;
+  }
+  .deload-flag b{font-family:var(--display);font-weight:800;letter-spacing:.04em;text-transform:uppercase;font-size:11px;color:var(--conditioning)}
+
+  .scrim{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:opacity .2s}
+  .scrim.open{opacity:1;pointer-events:auto}
+  .sheet{
+    position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--slab);
+    border-top:1px solid var(--line);border-radius:20px 20px 0 0;
+    padding:8px var(--pad) calc(24px + env(safe-area-inset-bottom));
+    max-height:88vh;overflow-y:auto;transform:translateY(101%);
+    transition:transform .28s cubic-bezier(.32,.72,0,1);max-width:640px;margin:0 auto;
+  }
+  .sheet.open{transform:translateY(0)}
+  .grab{width:34px;height:4px;background:var(--line);border-radius:2px;margin:6px auto 16px}
+  .sheet h3{font-family:var(--display);font-weight:800;font-size:19px;letter-spacing:-.02em;margin:0 0 3px}
+  .sheet .sub{font-size:12.5px;color:var(--steel);margin:0 0 18px}
+  .field{margin-bottom:13px}
+  .field label{display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel-dim);font-weight:600;margin-bottom:5px}
+  .field input,.field select{
+    width:100%;background:var(--ink);color:var(--chalk);border:1px solid var(--line);
+    border-radius:10px;padding:11px 12px;font-size:16px;font-weight:600;font-family:var(--body);
+  }
+  .field input:focus,.field select:focus{border-color:var(--steel-dim);outline:none}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  .primary{
+    width:100%;background:var(--chalk);color:var(--ink);border-radius:11px;
+    padding:13px;margin-top:6px;font-family:var(--display);font-weight:800;font-size:14px;
+  }
+  .ghost{width:100%;border:1px solid var(--line);border-radius:11px;padding:11px;margin-top:9px;font-size:13px;color:var(--steel)}
+  .divider{height:1px;background:var(--line);margin:20px 0 16px}
+
+  .fab{
+    position:fixed;z-index:30;left:50%;transform:translateX(-50%);
+    bottom:calc(18px + env(safe-area-inset-bottom));background:var(--slab-2);
+    border:1px solid var(--line);border-radius:999px;padding:9px 16px;
+    font-size:12.5px;font-weight:600;color:var(--steel);
+    display:flex;align-items:center;gap:8px;box-shadow:0 6px 22px rgba(0,0,0,.45);
+  }
+  .fab b{font-family:var(--display);font-weight:800;color:var(--chalk)}
+  .empty{text-align:center;color:var(--steel-dim);padding:52px 20px;font-size:13.5px}
+
+  @media (prefers-reduced-motion:reduce){*{transition-duration:.01ms !important;animation-duration:.01ms !important}}
+</style>
+<style>
+  .maxes{display:grid;grid-template-columns:1fr auto;gap:0;border:1px solid var(--line);border-radius:11px;overflow:hidden;margin-bottom:6px}
+  .maxes div{padding:9px 12px;font-size:13px;border-bottom:1px solid var(--line)}
+  .maxes div:nth-last-child(-n+2){border-bottom:none}
+  .maxes .mv{text-align:right;font-family:var(--display);font-weight:800;font-size:14px}
+  .maxes .mn{color:var(--steel)}
+  .coach-note{font-size:11.5px;color:var(--steel-dim);margin:0 0 18px;line-height:1.5}
+  .diag{font-size:11px;color:var(--steel-dim);line-height:1.6;word-break:break-word}
+  .diag b{color:var(--steel);font-weight:600}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     SETUP
+
+     For each client, publish TWO tabs from the workbook:
+       Sheets ▸ File ▸ Share ▸ Publish to web
+       ▸ pick the tab ▸ "Comma-separated values (.csv)" ▸ Publish ▸ copy link
+
+     Paste the links below. The Setup tab supplies the 1RMs, units and
+     rounding; the Program tab supplies the sessions.
+
+     Send each client their own link:
+       .../?c=joanna     .../?c=client2     .../?c=client3
+     ══════════════════════════════════════════════════════════════════════ -->
+<script>
+window.CLIENTS = [
+  {
+    key:     "joanna",
+    label:   "Block 2",
+    setup:   "",   // ← published CSV link for the "Setup" tab
+    program: ""    // ← published CSV link for the "Program" tab
+  },
+  {
+    key:     "client2",
+    label:   "Block 2",
+    setup:   "",   // ← "Client 2 - Setup"
+    program: ""    // ← "Client 2 - Program"
+  },
+  {
+    key:     "client3",
+    label:   "Block 2",
+    setup:   "",   // ← "Client 3 - Setup"
+    program: ""    // ← "Client 3 - Program"
+  }
+];
+
+/* Which 1RM each movement uses.
+   Names on the left must match the Lift Name column on the Setup tab.
+   Checked top to bottom, first match wins — so Clean sits above Back Squat,
+   otherwise "Front squat" would be caught by "squat". */
+window.LIFT_ALIASES = [
+  ["Clean",          ["clean","front squat","hang clean","squat clean","power clean"]],
+  ["Snatch",         ["snatch"]],
+  ["Overhead Press", ["strict press","push press","shoulder press","overhead press","jerk"]],
+  ["Bench Press",    ["bench"]],
+  ["Deadlift",       ["deadlift","rdl"]],
+  ["Back rack reverse Lunge", ["reverse lunge","back rack lunge"]],
+  ["Back Squat",     ["back squat","squat"]]
+];
+</script>
+
+<!-- Offline fallback: used before the first successful sync, and if the sheet is unreachable. -->
+<script id="program-data" type="application/json">
+{
+ "title": "Block 2",
+ "units": "kg",
+ "weeks": [
+  {
+   "week": 1,
+   "deload": false,
+   "days": [
+    {
+     "day": 1,
+     "items": [
+      {
+       "section": "Strength",
+       "movement": "Back squat",
+       "pct": 0.72,
+       "sets": 5,
+       "reps": 5,
+       "lift": "Back Squat"
+      },
+      {
+       "section": "Strength",
+       "movement": "Romanian Deadlift",
+       "sets": 4,
+       "reps": 8
+      },
+      {
+       "section": "Accessory",
+       "movement": "Banded Pullups",
+       "sets": 5,
+       "reps": 3
+      },
+      {
+       "section": "Accessory",
+       "movement": "Bent over rows (barbell or dumbell)",
+       "sets": 3,
+       "reps": 8,
+       "notes": "feel the sueeze in the upper back"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Leg curl leg extension superset (machines)",
+       "sets": 4,
+       "reps": 10,
+       "notes": "RPE 8"
+      },
+      {
+       "section": "Conditioning",
+       "movement": "4RFT - 300m row/ski, 20 kb swings, 10 db box step overs (two dbs) no rest",
+       "sets": 4,
+       "notes": "aim here is to start off steady and increase pace each round, 16kg for swings, 12-15kg for step overs"
+      }
+     ]
+    },
+    {
+     "day": 2,
+     "items": [
+      {
+       "section": "Strength",
+       "movement": "Strict press",
+       "pct": 0.65,
+       "sets": 4,
+       "reps": 6,
+       "lift": "Overhead Press"
+      },
+      {
+       "section": "Strength",
+       "movement": "Push press",
+       "pct": 0.7,
+       "sets": 3,
+       "reps": 5,
+       "lift": "Overhead Press"
+      },
+      {
+       "section": "Accessory",
+       "movement": "DB Shoulder Press",
+       "sets": 3,
+       "reps": 10,
+       "notes": "(moderate, 2 reps in reserve)"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Superset Face pulls 3x15, Tricep pushdown 3x12",
+       "sets": 3,
+       "notes": "I would do this banded, light band so you feel the tension, feel free to do this as part of your warmup, rest as needed"
+      },
+      {
+       "section": "Accessory",
+       "movement": "hollow hold 20 seconds, side plank 20 seconds each side, vtucks 20",
+       "sets": 4,
+       "notes": "Rest as needed between rounds"
+      },
+      {
+       "section": "Conditioning",
+       "movement": "Spin or easy cardio 15-20 mins run or bike"
+      }
+     ]
+    },
+    {
+     "day": 3,
+     "items": [
+      {
+       "section": "Strength",
+       "movement": "Squat cleans",
+       "pct": 0.8,
+       "sets": 5,
+       "reps": 2,
+       "lift": "Clean"
+      },
+      {
+       "section": "Strength",
+       "movement": "Front squat",
+       "pct": 0.8,
+       "sets": 3,
+       "reps": 5,
+       "notes": "% here is based on clean 1rm :)",
+       "lift": "Clean"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Ring Rows",
+       "sets": 3,
+       "reps": 8,
+       "notes": "Last set try to hold at the top and then eccentric"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Eccentric pull-ups",
+       "sets": 5,
+       "reps": 1
+      },
+      {
+       "section": "Accessory",
+       "movement": "10 KB goblet squat, 20 Cossack squat KB, 30 KB swings",
+       "sets": 3,
+       "notes": "Perform movements back to back, go heavier on the squats and swings, rest as needed between sets"
+      },
+      {
+       "section": "Conditioning",
+       "movement": "TBC"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "week": 2,
+   "deload": false,
+   "days": [
+    {
+     "day": 1,
+     "items": [
+      {
+       "section": "Strength",
+       "movement": "Back squat",
+       "pct": 0.75,
+       "sets": 5,
+       "reps": 5,
+       "lift": "Back Squat"
+      },
+      {
+       "section": "Strength",
+       "movement": "Romanian Deadlift",
+       "sets": 4,
+       "reps": 8
+      },
+      {
+       "section": "Accessory",
+       "movement": "Banded Pullups",
+       "sets": 5,
+       "reps": 3
+      },
+      {
+       "section": "Accessory",
+       "movement": "Bent over rows (barbell or dumbell)",
+       "sets": 3,
+       "reps": 8,
+       "notes": "feel the sueeze in the upper back"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Leg curl leg extension superset (machines)",
+       "sets": 4,
+       "reps": 10,
+       "notes": "RPE 8"
+      },
+      {
+       "section": "Conditioning",
+       "movement": "4RFT - 400m row/ski, 10 db snatch, 10 burpees rest 60 seconds repeat",
+       "notes": "aim here is to start off steady and increase pace each round, 16kg for swings, 12-15kg for step overs"
+      }
+     ]
+    },
+    {
+     "day": 2,
+     "items": [
+      {
+       "section": "Strength",
+       "movement": "Strict press",
+       "pct": 0.7,
+       "sets": 4,
+       "reps": 5,
+       "lift": "Overhead Press"
+      },
+      {
+       "section": "Strength",
+       "movement": "Push press",
+       "pct": 0.72,
+       "sets": 3,
+       "reps": 5,
+       "lift": "Overhead Press"
+      },
+      {
+       "section": "Accessory",
+       "movement": "DB Shoulder Press:",
+       "sets": 3,
+       "reps": 8,
+       "notes": "(moderate, 2 reps in reserve)"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Superset Face pulls 3x15, Tricep pushdown 3x12",
+       "sets": 3,
+       "notes": "I would do this banded, light band so you feel the tension, feel free to do this as part of your warmup, rest as needed"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Mountain climbers 30, Situps 20, side plank with rotation 5 each side",
+       "sets": 3,
+       "notes": "Rest as needed between rounds"
+      },
+      {
+       "section": "Conditioning",
+       "movement": "Spin or easy cardio 15-20 mins run or bike"
+      }
+     ]
+    },
+    {
+     "day": 3,
+     "items": [
+      {
+       "section": "Strength",
+       "movement": "Hang clean",
+       "pct": 0.7,
+       "sets": 5,
+       "reps": 3,
+       "lift": "Clean"
+      },
+      {
+       "section": "Strength",
+       "movement": "Front squat",
+       "pct": 0.85,
+       "sets": 3,
+       "reps": 5,
+       "notes": "% here is based on clean 1rm :)",
+       "lift": "Clean"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Ring Rows",
+       "sets": 3,
+       "reps": 10,
+       "notes": "Last set try to hold at the top and then eccentric"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Eccentric pull-ups",
+       "sets": 5,
+       "reps": 1
+      },
+      {
+       "section": "Accessory",
+       "movement": "Top plank, side plank left, side plank right, top plank (20 seconds each performed back to back)",
+       "sets": 3,
+       "notes": "Perform movements back to back, go heavier on the squats and swings, rest as needed between sets"
+      },
+      {
+       "section": "Conditioning",
+       "movement": "TBC"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "week": 3,
+   "deload": false,
+   "days": [
+    {
+     "day": 1,
+     "items": [
+      {
+       "section": "Strength",
+       "movement": "Back squat",
+       "pct": 0.78,
+       "sets": 5,
+       "reps": 5,
+       "lift": "Back Squat"
+      },
+      {
+       "section": "Strength",
+       "movement": "Romanian Deadlift",
+       "sets": 4,
+       "reps": 8
+      },
+      {
+       "section": "Accessory",
+       "movement": "Banded Pullups",
+       "sets": 5,
+       "reps": 3
+      },
+      {
+       "section": "Accessory",
+       "movement": "Bent over rows barbell only",
+       "sets": 3,
+       "reps": 8,
+       "notes": "feel the sueeze in the upper back"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Leg curl leg extension superset (machines)",
+       "sets": 4,
+       "reps": 10,
+       "notes": "RPE 8"
+      }
+     ]
+    },
+    {
+     "day": 2,
+     "items": [
+      {
+       "section": "Strength",
+       "movement": "Strict press",
+       "pct": 0.72,
+       "sets": 5,
+       "reps": 5,
+       "lift": "Overhead Press"
+      },
+      {
+       "section": "Strength",
+       "movement": "Push press",
+       "pct": 0.75,
+       "sets": 4,
+       "reps": 4,
+       "lift": "Overhead Press"
+      },
+      {
+       "section": "Accessory",
+       "movement": "DB Shoulder Press:",
+       "sets": 4,
+       "reps": 8,
+       "notes": "(moderate, 2 reps in reserve)"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Superset Face pulls 3x15, Tricep pushdown 3x12",
+       "sets": 3,
+       "notes": "I would do this banded, light band so you feel the tension, feel free to do this as part of your warmup, rest as needed"
+      },
+      {
+       "section": "Accessory",
+       "movement": "hollow hold 20 seconds, side plank 20 seconds each side, vtucks 20",
+       "sets": 4,
+       "notes": "Rest as needed between rounds"
+      },
+      {
+       "section": "Conditioning",
+       "movement": "Spin or easy cardio 15-20 mins run or bike"
+      }
+     ]
+    },
+    {
+     "day": 3,
+     "items": [
+      {
+       "section": "Strength",
+       "movement": "Squat cleans",
+       "pct": 0.8,
+       "sets": 6,
+       "reps": 2,
+       "lift": "Clean"
+      },
+      {
+       "section": "Strength",
+       "movement": "Front squat",
+       "pct": 0.9,
+       "sets": 4,
+       "reps": 4,
+       "notes": "% here is based on clean 1rm :)",
+       "lift": "Clean"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Ring Rows",
+       "sets": 4,
+       "reps": 8
+      },
+      {
+       "section": "Accessory",
+       "movement": "Eccentric pull-ups",
+       "sets": 5,
+       "reps": 1
+      },
+      {
+       "section": "Accessory",
+       "movement": "10 KB goblet squat, 20 walking lunges (light weight)",
+       "sets": 3,
+       "notes": "Perform movements back to back, go heavier on the squats and swings, rest as needed between sets"
+      },
+      {
+       "section": "Conditioning",
+       "movement": "TBC",
+       "sets": 3
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "week": 4,
+   "deload": true,
+   "days": [
+    {
+     "day": 1,
+     "items": [
+      {
+       "section": "Strength",
+       "movement": "Back squat",
+       "pct": 0.65,
+       "sets": 3,
+       "reps": 5,
+       "notes": "DELOAD - Don’t get greedy",
+       "lift": "Back Squat"
+      },
+      {
+       "section": "Strength",
+       "movement": "Romanian Deadlift",
+       "sets": 3,
+       "reps": 8
+      },
+      {
+       "section": "Accessory",
+       "movement": "Banded Pullups",
+       "sets": 5,
+       "reps": 3
+      },
+      {
+       "section": "Accessory",
+       "movement": "Bent over rows (barbell or dumbell)",
+       "sets": 3,
+       "reps": 10,
+       "notes": "feel the sueeze in the upper back"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Leg curl leg extension superset (machines)",
+       "sets": 4,
+       "reps": 10
+      },
+      {
+       "section": "Conditioning",
+       "movement": "3RFT - 500m row/ski, 25 wallballs, 20 KB swings rest 60 seconds repeat",
+       "notes": "Spicy, break the wall balls early, try to set a pace that’s within 20 seconds each round"
+      }
+     ]
+    },
+    {
+     "day": 2,
+     "items": [
+      {
+       "section": "Strength",
+       "movement": "Strict press",
+       "pct": 0.65,
+       "sets": 3,
+       "reps": 5,
+       "notes": "DELOAD - Don’t get greedy",
+       "lift": "Overhead Press"
+      },
+      {
+       "section": "Strength",
+       "movement": "Push press",
+       "pct": 0.7,
+       "sets": 3,
+       "reps": 3,
+       "notes": "DELOAD - Don’t get greedy",
+       "lift": "Overhead Press"
+      },
+      {
+       "section": "Accessory",
+       "movement": "DB Shoulder Press: 3 x 10",
+       "notes": "(moderate, 2 reps in reserve)"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Superset Face pulls 3x15, Tricep pushdown 3x12",
+       "sets": 3,
+       "notes": "I would do this banded, light band so you feel the tension, feel free to do this as part of your warmup, rest as needed"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Mountain climbers 30, Situps 20, side plank with rotation 5 each side",
+       "sets": 3,
+       "notes": "Rest as needed between rounds"
+      },
+      {
+       "section": "Conditioning",
+       "movement": "Spin or easy cardio 15-20 mins run or bike"
+      }
+     ]
+    },
+    {
+     "day": 3,
+     "items": [
+      {
+       "section": "Strength",
+       "movement": "Clean EMOM x2",
+       "pct": 0.75,
+       "reps": 10,
+       "notes": "2 cleans every minute on the minute volume over weight this week",
+       "lift": "Clean"
+      },
+      {
+       "section": "Strength",
+       "movement": "Front squat",
+       "pct": 0.9,
+       "sets": 3,
+       "reps": 3,
+       "notes": "% here is based on clean 1rm :)",
+       "lift": "Clean"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Ring Rows",
+       "sets": 4,
+       "reps": 10
+      },
+      {
+       "section": "Accessory",
+       "movement": "Eccentric pull-ups",
+       "sets": 5,
+       "reps": 1
+      },
+      {
+       "section": "Accessory",
+       "movement": "Top plank, side plank left, side plank right, top plank (20 seconds each performed back to back)",
+       "sets": 3,
+       "notes": "Perform movements back to back, go heavier on the squats and swings, rest as needed between sets"
+      },
+      {
+       "section": "Conditioning",
+       "movement": "TBC"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "week": 5,
+   "deload": false,
+   "days": [
+    {
+     "day": 1,
+     "items": [
+      {
+       "section": "Strength",
+       "movement": "Back squat",
+       "pct": 0.8,
+       "sets": 5,
+       "reps": 4,
+       "lift": "Back Squat"
+      },
+      {
+       "section": "Strength",
+       "movement": "Romanian Deadlift",
+       "sets": 4,
+       "reps": 6
+      },
+      {
+       "section": "Accessory",
+       "movement": "Banded Pullups",
+       "sets": 5,
+       "reps": 4
+      },
+      {
+       "section": "Accessory",
+       "movement": "Bent over rows barbell only",
+       "sets": 4,
+       "reps": 6,
+       "notes": "feel the sueeze in the upper back"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Heels elevated goblet squat",
+       "sets": 3,
+       "reps": 15,
+       "notes": "Go heavy, try to stop just short of full extension, getting that pump on the legs"
+      },
+      {
+       "section": "Conditioning",
+       "movement": "",
+       "notes": "Focus on correct pacing not an all out sprint, would aim to row around 10 seconds slower than 500m pace. Goblet squat should be light enough that you can perform unbroken but still test the legs"
+      }
+     ]
+    },
+    {
+     "day": 2,
+     "items": [
+      {
+       "section": "Strength",
+       "movement": "Strict press",
+       "pct": 0.75,
+       "sets": 5,
+       "reps": 4,
+       "lift": "Overhead Press"
+      },
+      {
+       "section": "Strength",
+       "movement": "Push press",
+       "pct": 0.78,
+       "sets": 4,
+       "reps": 4,
+       "lift": "Overhead Press"
+      },
+      {
+       "section": "Accessory",
+       "movement": "DB Shoulder Press",
+       "sets": 4,
+       "reps": 8,
+       "notes": "(moderate, 2 reps in reserve)"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Superset Face pulls 3x15, Tricep pushdown 3x12",
+       "sets": 3,
+       "notes": "I would do this banded, light band so you feel the tension, feel free to do this as part of your warmup, rest as needed"
+      },
+      {
+       "section": "Accessory",
+       "movement": "hollow hold 20 seconds, side plank 20 seconds each side, vtucks 20",
+       "sets": 4,
+       "notes": "Rest as needed between rounds"
+      },
+      {
+       "section": "Conditioning",
+       "movement": "Spin or easy cardio 20-25 mins run or bike"
+      }
+     ]
+    },
+    {
+     "day": 3,
+     "items": [
+      {
+       "section": "Strength",
+       "movement": "Squat Cleans",
+       "pct": 0.85,
+       "sets": 6,
+       "reps": 1,
+       "lift": "Clean"
+      },
+      {
+       "section": "Strength",
+       "movement": "Front squat",
+       "pct": 1.0,
+       "sets": 3,
+       "reps": 3,
+       "notes": "% here is based on clean 1rm :)",
+       "lift": "Clean"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Aussie rows",
+       "sets": 3,
+       "reps": 5
+      },
+      {
+       "section": "Accessory",
+       "movement": "Banded Chin ups",
+       "sets": 5,
+       "reps": 3
+      },
+      {
+       "section": "Accessory",
+       "movement": "10 gorilla rows, 10 kb goblet squats, 10 kb swings",
+       "sets": 3,
+       "notes": "Perform movements back to back, go heavier on the squats and swings, rest as needed between sets"
+      },
+      {
+       "section": "Conditioning",
+       "movement": "Banded Chin ups",
+       "sets": 5,
+       "reps": 5
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "week": 6,
+   "deload": false,
+   "days": [
+    {
+     "day": 1,
+     "items": [
+      {
+       "section": "Strength",
+       "movement": "Back squat",
+       "pct": 0.85,
+       "sets": 5,
+       "reps": 3,
+       "lift": "Back Squat"
+      },
+      {
+       "section": "Strength",
+       "movement": "Romanian Deadlift",
+       "sets": 4,
+       "reps": 5
+      },
+      {
+       "section": "Accessory",
+       "movement": "Banded Pullups",
+       "sets": 5,
+       "reps": 5
+      },
+      {
+       "section": "Accessory",
+       "movement": "Bent over rows barbell only",
+       "sets": 5,
+       "reps": 5
+      },
+      {
+       "section": "Accessory",
+       "movement": "Heels elevated goblet squat",
+       "sets": 3,
+       "reps": 15,
+       "notes": "Go heavy, try to stop just short of full extension, getting that pump on the legs"
+      }
+     ]
+    },
+    {
+     "day": 2,
+     "items": [
+      {
+       "section": "Strength",
+       "movement": "Strict press",
+       "pct": 0.8,
+       "sets": 5,
+       "reps": 3,
+       "lift": "Overhead Press"
+      },
+      {
+       "section": "Strength",
+       "movement": "Push press",
+       "pct": 0.82,
+       "sets": 3,
+       "reps": 3,
+       "lift": "Overhead Press"
+      },
+      {
+       "section": "Accessory",
+       "movement": "DB Shoulder Press",
+       "sets": 3,
+       "reps": 8,
+       "notes": "One less set than last week, time to up the weight a little"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Superset Face pulls 3x15, Tricep pushdown 3x12",
+       "sets": 3,
+       "notes": "I would do this banded, light band so you feel the tension, feel free to do this as part of your warmup, rest as needed"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Mountain climbers 30, Situps 20, side plank with rotation 5 each side",
+       "sets": 3,
+       "notes": "Rest as needed between rounds"
+      },
+      {
+       "section": "Conditioning",
+       "movement": "Spin or easy cardio 20-25 mins run or bike"
+      }
+     ]
+    },
+    {
+     "day": 3,
+     "items": [
+      {
+       "section": "Strength",
+       "movement": "Hang clean, squat clean, front squat complex",
+       "pct": 0.7,
+       "sets": 8,
+       "reps": 1,
+       "lift": "Clean"
+      },
+      {
+       "section": "Strength",
+       "movement": "Front squat",
+       "pct": 1.05,
+       "sets": 3,
+       "reps": 3,
+       "notes": "% here is based on clean 1rm :)",
+       "lift": "Clean"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Aussie rows",
+       "sets": 4,
+       "reps": 5
+      },
+      {
+       "section": "Accessory",
+       "movement": "Banded Chin ups"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Top plank, side plank left, side plank right, top plank (25 seconds each performed back to back)",
+       "sets": 3,
+       "notes": "Perform movements back to back, go heavier on the squats and swings, rest as needed between sets"
+      },
+      {
+       "section": "Conditioning",
+       "movement": "TBC"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "week": 7,
+   "deload": false,
+   "days": [
+    {
+     "day": 1,
+     "items": [
+      {
+       "section": "Strength",
+       "movement": "Back squat",
+       "pct": 0.9,
+       "sets": 6,
+       "reps": 2,
+       "lift": "Back Squat"
+      },
+      {
+       "section": "Strength",
+       "movement": "Romanian Deadlift",
+       "sets": 3,
+       "reps": 5
+      },
+      {
+       "section": "Accessory",
+       "movement": "Banded Pullups",
+       "sets": 3,
+       "reps": "amrap"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Bent over rows barbell only",
+       "sets": 5,
+       "reps": 5
+      },
+      {
+       "section": "Accessory",
+       "movement": "Heels elevated goblet squat",
+       "sets": 3,
+       "reps": 15,
+       "notes": "Go heavy, try to stop just short of full extension, getting that pump on the legs"
+      }
+     ]
+    },
+    {
+     "day": 2,
+     "items": [
+      {
+       "section": "Strength",
+       "movement": "Strict press",
+       "pct": 0.85,
+       "sets": 6,
+       "reps": 2,
+       "lift": "Overhead Press"
+      },
+      {
+       "section": "Strength",
+       "movement": "Push press",
+       "pct": 0.85,
+       "sets": 3,
+       "reps": 2,
+       "lift": "Overhead Press"
+      },
+      {
+       "section": "Accessory",
+       "movement": "DB Shoulder Press",
+       "sets": 3,
+       "reps": 8,
+       "notes": "(moderate, 2 reps in reserve)"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Superset Face pulls 3x15, Tricep pushdown 3x12",
+       "sets": 3,
+       "notes": "I would do this banded, light band so you feel the tension, feel free to do this as part of your warmup, rest as needed"
+      },
+      {
+       "section": "Accessory",
+       "movement": "hollow hold 20 seconds, side plank 20 seconds each side, vtucks 20",
+       "sets": 4,
+       "notes": "Rest as needed between rounds"
+      },
+      {
+       "section": "Conditioning",
+       "movement": "Spin or easy cardio 25-30 mins run or bike"
+      }
+     ]
+    },
+    {
+     "day": 3,
+     "items": [
+      {
+       "section": "Strength",
+       "movement": "Hang clean (from just above the knee)",
+       "pct": 0.85,
+       "sets": 5,
+       "reps": 2,
+       "lift": "Clean"
+      },
+      {
+       "section": "Strength",
+       "movement": "Front squat",
+       "pct": 1.1,
+       "notes": "% here is based on clean 1rm :)",
+       "lift": "Clean"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Aussie rows",
+       "sets": 5,
+       "reps": 5
+      },
+      {
+       "section": "Accessory",
+       "movement": "Banded Chin ups"
+      },
+      {
+       "section": "Accessory",
+       "movement": "10 kb swings, 10 deadbugs, 10 gorilla rows",
+       "sets": 3,
+       "notes": "Perform movements back to back, go heavier on the squats and swings, rest as needed between sets"
+      },
+      {
+       "section": "Conditioning",
+       "movement": "TBC"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "week": 8,
+   "deload": false,
+   "days": [
+    {
+     "day": 1,
+     "items": [
+      {
+       "section": "Strength",
+       "movement": "Back squat - 3x3 @75%, 2x2& 85%, 1x1 @92% optional 1RM"
+      },
+      {
+       "section": "Strength",
+       "movement": "RDL",
+       "sets": 4,
+       "reps": 8
+      },
+      {
+       "section": "Accessory",
+       "movement": "Pullup attempt :) amrap 5 minutes no bands"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Bent over rows barbell only",
+       "sets": 5,
+       "reps": 5
+      },
+      {
+       "section": "Accessory",
+       "movement": "Heels elevated goblet squat",
+       "sets": 3,
+       "reps": 15,
+       "notes": "Go heavy, try to stop just short of full extension, getting that pump on the legs"
+      }
+     ]
+    },
+    {
+     "day": 2,
+     "items": [
+      {
+       "section": "Strength",
+       "movement": "Strict press",
+       "pct": 1.0,
+       "sets": 5,
+       "reps": 1,
+       "notes": "1RM single, 70,80,90,100,100+%",
+       "lift": "Overhead Press"
+      },
+      {
+       "section": "Strength",
+       "movement": "Push press",
+       "pct": 0.85,
+       "sets": 3,
+       "reps": 3,
+       "lift": "Overhead Press"
+      },
+      {
+       "section": "Accessory",
+       "movement": "DB Shoulder Press",
+       "sets": 3,
+       "reps": 10,
+       "notes": "(moderate, 2 reps in reserve)"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Superset Face pulls 3x15, Tricep pushdown 3x12",
+       "sets": 3,
+       "notes": "I would do this banded, light band so you feel the tension, feel free to do this as part of your warmup, rest as needed"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Mountain climbers 30, Situps 20, side plank with rotation 5 each side",
+       "sets": 3,
+       "notes": "Rest as needed between rounds"
+      },
+      {
+       "section": "Conditioning",
+       "movement": "Spin or easy cardio 30 mins run or bike"
+      }
+     ]
+    },
+    {
+     "day": 3,
+     "items": [
+      {
+       "section": "Strength",
+       "movement": "Hang clean 1rm test"
+      },
+      {
+       "section": "Strength",
+       "movement": "Front squat 3rm test",
+       "notes": "Build to heavy set of three to get baseline"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Banded pullup max set"
+      },
+      {
+       "section": "Accessory",
+       "movement": "Top plank, side plank left, side plank right, top plank (30 seconds each performed back to back)",
+       "sets": 3,
+       "notes": "Perform movements back to back, go heavier on the squats and swings, rest as needed between sets"
+      },
+      {
+       "section": "Conditioning",
+       "movement": "TBC"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
+</script>
+
+<header>
+  <div class="bar">
+    <div class="title" id="title">Training Block</div>
+    <button class="icon-btn" id="refresh" aria-label="Check for program updates">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg>
+    </button>
+    <button class="icon-btn" id="open-setup" aria-label="Settings and log">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+    </button>
+  </div>
+  <div class="weeks" id="weeks"></div>
+  <div class="days" id="days"></div>
+</header>
+
+<main id="main"></main>
+
+<button class="fab" id="fab"><b id="fab-n">0</b> <span>of <span id="fab-t">0</span> done today</span></button>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Settings and log">
+  <div class="grab"></div>
+
+  <h3>Your maxes</h3>
+  <p class="coach-note" id="maxes-note">Set by your coach in the programme sheet.</p>
+  <div class="maxes" id="maxes-list"></div>
+
+  <div class="field" style="margin-top:16px">
+    <label for="s-bar">Bar weight</label>
+    <select id="s-bar"><option value="20">20 kg</option><option value="15">15 kg</option><option value="10">10 kg</option><option value="0">No bar</option></select>
+  </div>
+  <button class="primary" id="save">Save</button>
+
+  <div class="divider"></div>
+  <h3>Your log</h3>
+  <p class="sub" id="log-count">Nothing logged yet.</p>
+  <button class="ghost" id="export">Copy log to send to your coach</button>
+  <button class="ghost" id="reset">Clear all ticks and weights</button>
+
+  <div class="divider"></div>
+  <h3>Connection</h3>
+  <p class="diag" id="diag">Checking…</p>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- storage ---------- */
+  var mem = {};
+  var store = {
+    get:function(k){ try{ return localStorage.getItem(k); }catch(e){ return mem[k]||null; } },
+    set:function(k,v){ try{ localStorage.setItem(k,v); }catch(e){ mem[k]=v; } }
+  };
+  function load(k,d){ var v=store.get(k); if(v==null) return d; try{ return JSON.parse(v); }catch(e){ return d; } }
+  function save(k,v){ store.set(k,JSON.stringify(v)); }
+
+  /* ---------- which client ---------- */
+  var params = new URLSearchParams(location.search);
+  var want = params.get("c");
+  var CLIENT = (window.CLIENTS||[]).filter(function(c){ return c.key===want; })[0]
+            || (window.CLIENTS||[])[0]
+            || {key:"default",label:"",setup:"",program:""};
+
+  var KEY = "wod:" + CLIENT.key;
+
+  /* ---------- CSV ---------- */
+  function parseCSV(text){
+    var rows=[], row=[], cur="", q=false, i=0;
+    text = text.replace(/\r\n/g,"\n").replace(/\r/g,"\n");
+    while(i<text.length){
+      var c=text[i];
+      if(q){
+        if(c==='"'){ if(text[i+1]==='"'){ cur+='"'; i++; } else q=false; }
+        else cur+=c;
+      } else {
+        if(c==='"') q=true;
+        else if(c===","){ row.push(cur); cur=""; }
+        else if(c==="\n"){ row.push(cur); rows.push(row); row=[]; cur=""; }
+        else cur+=c;
+      }
+      i++;
+    }
+    if(cur.length||row.length){ row.push(cur); rows.push(row); }
+    return rows;
+  }
+
+  function cell(rows,r,c){ return (rows[r]&&rows[r][c]!=null) ? String(rows[r][c]).trim() : ""; }
+  function norm(s){ return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim(); }
+
+  /* ---------- Setup tab ---------- */
+  function findValueRight(rows,label){
+    var target=norm(label);
+    for(var r=0;r<rows.length;r++){
+      for(var c=0;c<(rows[r]||[]).length;c++){
+        if(norm(cell(rows,r,c))===target){
+          for(var k=c+1;k<(rows[r]||[]).length;k++){
+            var v=cell(rows,r,k);
+            if(v!=="") return v;
+          }
+        }
+      }
+    }
+    return "";
+  }
+
+  function parseSetup(rows){
+    var out = {
+      client: findValueRight(rows,"Client Name"),
+      units:  findValueRight(rows,"Units") || "kg",
+      round:  parseFloat(findValueRight(rows,"Rounding Increment")) || 1.25,
+      lifts:  {}
+    };
+    /* locate the lift table header, then read down until it runs dry */
+    var hr=-1, nameCol=-1, valCol=-1;
+    for(var r=0;r<rows.length && hr===-1;r++){
+      for(var c=0;c<(rows[r]||[]).length;c++){
+        if(norm(cell(rows,r,c))==="lift name"){
+          hr=r; nameCol=c;
+          for(var k=c+1;k<(rows[r]||[]).length;k++){
+            if(norm(cell(rows,r,k)).indexOf("1rm")>-1){ valCol=k; break; }
+          }
+          if(valCol===-1) valCol=c+1;
+          break;
+        }
+      }
+    }
+    if(hr===-1) return out;
+
+    var blanks=0;
+    for(var r2=hr+1;r2<rows.length && blanks<6;r2++){
+      var nm=cell(rows,r2,nameCol);
+      if(nm===""){ blanks++; continue; }
+      blanks=0;
+      if(norm(nm).indexOf("rename lifts")>-1) break;
+      var v=parseFloat(cell(rows,r2,valCol));
+      if(!isNaN(v) && v>0) out.lifts[nm]=v;   // blank 1RMs are ignored
+    }
+    return out;
+  }
+
+  /* ---------- Program tab ---------- */
+  var HEADER_KEYS = {
+    "week":"week","wk":"week",
+    "day":"day",
+    "section":"section","block":"section","type":"section",
+    "movement / exercise":"movement","movement":"movement","exercise":"movement","movement/exercise":"movement",
+    "% 1rm":"pct","%1rm":"pct","% of 1rm":"pct","percent":"pct","%":"pct",
+    "sets":"sets","reps":"reps",
+    "working weight":"weight",
+    "notes / workout details":"notes","notes":"notes","workout details":"notes","details":"notes"
+  };
+
+  function resolveLift(movement, lifts){
+    var m=norm(movement);
+    if(!m) return null;
+    var names=Object.keys(lifts);
+    /* an exact lift name appearing in the movement wins, longest first */
+    names.sort(function(a,b){ return norm(b).length-norm(a).length; });
+    for(var i=0;i<names.length;i++){
+      if(m.indexOf(norm(names[i]))>-1) return names[i];
+    }
+    /* otherwise fall back to the alias table, in order */
+    var aliases=window.LIFT_ALIASES||[];
+    for(var j=0;j<aliases.length;j++){
+      var liftName=aliases[j][0], kws=aliases[j][1];
+      var match=names.filter(function(n){ return norm(n)===norm(liftName); })[0];
+      if(!match) continue;
+      for(var k=0;k<kws.length;k++) if(m.indexOf(norm(kws[k]))>-1) return match;
+    }
+    return null;
+  }
+
+  function buildProgram(rows, lifts, title){
+    var headerRow=-1, cols={};
+    for(var r=0;r<Math.min(rows.length,40);r++){
+      var found={};
+      for(var c=0;c<(rows[r]||[]).length;c++){
+        var k=HEADER_KEYS[norm(cell(rows,r,c)).replace(/\s+/g," ")];
+        if(!k){
+          var raw=String(cell(rows,r,c)).trim().toLowerCase();
+          k=HEADER_KEYS[raw];
+        }
+        if(k && !(k in found)) found[k]=c;
+      }
+      if("week" in found && "day" in found && "movement" in found){ headerRow=r; cols=found; break; }
+    }
+    if(headerRow===-1)
+      throw new Error("No header row found. The Program tab needs columns called Week, Day, Section and Movement / Exercise.");
+
+    var week=null, day=null, out=[];
+    for(var r2=headerRow+1;r2<rows.length;r2++){
+      var g=function(k){ return (k in cols) ? cell(rows,r2,cols[k]) : ""; };
+      var wv=parseFloat(g("week")), dv=parseFloat(g("day"));
+      if(!isNaN(wv)) week=Math.round(wv);
+      if(!isNaN(dv)) day=Math.round(dv);
+
+      var movement=g("movement"), notes=g("notes"), section=g("section");
+      if(!movement && !notes) continue;
+      if(week===null||day===null) continue;
+
+      var pct=null, praw=g("pct").replace("%","").trim();
+      if(praw!==""){
+        var pv=parseFloat(praw);
+        if(!isNaN(pv)) pct = pv>3 ? pv/100 : pv;
+      }
+      var sv=parseFloat(g("sets"));
+
+      out.push({
+        week:week, day:day,
+        section:section||"Accessory",
+        movement:movement,
+        pct:pct,
+        sets:isNaN(sv)?null:Math.round(sv),
+        reps:g("reps")||null,
+        notes:notes||null,
+        lift:pct!==null?resolveLift(movement,lifts):null
+      });
+    }
+
+    var weeks={}, order=[];
+    out.forEach(function(it){
+      if(!weeks[it.week]){ weeks[it.week]={}; order.push(it.week); }
+      if(!weeks[it.week][it.day]) weeks[it.week][it.day]=[];
+      weeks[it.week][it.day].push(it);
+    });
+    order.sort(function(a,b){return a-b;});
+
+    return {
+      title:title,
+      weeks: order.map(function(w){
+        var days=Object.keys(weeks[w]).map(Number).sort(function(a,b){return a-b;});
+        return {
+          week:w,
+          deload: days.some(function(d){
+            return weeks[w][d].some(function(i){ return (i.notes||"").toLowerCase().indexOf("deload")>-1; });
+          }),
+          days: days.map(function(d){ return {day:d, items:weeks[w][d]}; })
+        };
+      })
+    };
+  }
+
+  /* ---------- state ---------- */
+  var PROGRAM = JSON.parse(document.getElementById("program-data").textContent);
+  var SETUP   = load(KEY+":setup", {client:"", units:"kg", round:1.25, lifts:{}});
+  var cached  = load(KEY+":program", null);
+  if(cached && cached.weeks && cached.weeks.length) PROGRAM = cached;
+
+  var opts = load(KEY+":opts", {bar:20});
+  var done = load(KEY+":done", {});
+  var log  = load(KEY+":log",  {});
+  var view = load(KEY+":view", {w:0,d:0});
+  var diag = {status:"idle", msg:"", at:load(KEY+":syncedAt",null)};
+
+  var SECTIONS = {
+    Strength:{c:"var(--strength)",order:1},
+    Accessory:{c:"var(--accessory)",order:2},
+    Conditioning:{c:"var(--conditioning)",order:3}
+  };
+  var PLATES=[{kg:25,c:"#E33B3B",h:30},{kg:20,c:"#3B7BE8",h:28},{kg:15,c:"#F0C419",h:26},
+              {kg:10,c:"#4CAF6D",h:23},{kg:5,c:"#D9DDE2",h:19},{kg:2.5,c:"#B0B7C0",h:16},
+              {kg:1.25,c:"#8A97A6",h:13}];
+
+  /* ---------- helpers ---------- */
+  function roundTo(v,s){ return s ? Math.round(v/s)*s : Math.round(v*10)/10; }
+  function fmt(n){ return (Math.round(n*100)/100).toString(); }
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+  function idOf(w,d,i){ return "w"+w+"d"+d+"i"+i; }
+  function unit(){ return SETUP.units||"kg"; }
+
+  function workingWeight(item){
+    if(!item.pct||!item.lift) return null;
+    var m=parseFloat(SETUP.lifts[item.lift]);
+    if(!m||isNaN(m)) return null;
+    return roundTo(m*item.pct, parseFloat(SETUP.round)||1.25);
+  }
+  function plateBreakdown(total){
+    var bar=parseFloat(opts.bar)||0;
+    if(total<=bar) return null;
+    var rem=(total-bar)/2, out=[];
+    PLATES.forEach(function(p){ while(rem>=p.kg-0.001){ out.push(p); rem-=p.kg; } });
+    return {plates:out,left:Math.round(rem*100)/100};
+  }
+  function curWeek(){ return PROGRAM.weeks[view.w]; }
+  function curDay(){ var w=curWeek(); return w&&w.days[view.d]; }
+
+  function dayStats(wi,di){
+    var w=PROGRAM.weeks[wi]; if(!w) return {n:0,t:0};
+    var d=w.days[di]; if(!d) return {n:0,t:0};
+    var n=0;
+    for(var i=0;i<d.items.length;i++) if(done[idOf(w.week,d.day,i)]) n++;
+    return {n:n,t:d.items.length};
+  }
+  function weekDone(wi){
+    var w=PROGRAM.weeks[wi], t=0, n=0;
+    for(var i=0;i<w.days.length;i++){ var s=dayStats(wi,i); t+=s.t; n+=s.n; }
+    return t>0 && n===t;
+  }
+  function lastLogged(movement,wNum,dNum){
+    var target=norm(movement), best=null;
+    if(!target) return null;
+    PROGRAM.weeks.forEach(function(w){
+      w.days.forEach(function(d){
+        if(w.week>wNum || (w.week===wNum && d.day>=dNum)) return;
+        d.items.forEach(function(it,i){
+          if(norm(it.movement)!==target) return;
+          var v=log[idOf(w.week,d.day,i)];
+          if(v==null||v==="") return;
+          if(!best||w.week>best.w||(w.week===best.w&&d.day>best.d)) best={w:w.week,d:d.day,v:v};
+        });
+      });
+    });
+    return best;
+  }
+
+  /* ---------- render ---------- */
+  function renderWeeks(){
+    var el=document.getElementById("weeks"), h="";
+    PROGRAM.weeks.forEach(function(w,i){
+      h+='<button class="wk'+(i===view.w?" on":"")+(w.deload?" deload":"")+(weekDone(i)?" done":"")+'" data-w="'+i+'">'
+       + '<small>WK</small><b>'+w.week+'</b><span class="dot"></span></button>';
+    });
+    el.innerHTML=h;
+    var on=el.querySelector(".wk.on");
+    if(on) on.scrollIntoView({block:"nearest",inline:"center"});
+  }
+  function renderDays(){
+    var el=document.getElementById("days"), w=curWeek(), h="";
+    if(!w){ el.innerHTML=""; return; }
+    w.days.forEach(function(d,i){
+      var s=dayStats(view.w,i), p=s.t?(s.n/s.t*100):0;
+      h+='<button class="day'+(i===view.d?" on":"")+'" data-d="'+i+'">'
+       + '<span class="lbl">Day</span><span class="nm">'+d.day+'</span>'
+       + '<span class="prog" style="width:'+p+'%"></span></button>';
+    });
+    el.innerHTML=h;
+  }
+  function barbellHTML(total){
+    var b=plateBreakdown(total);
+    if(!b||!b.plates.length)
+      return '<div class="bb"><div class="bb-note">Lighter than the bar &mdash; use dumbbells or an empty bar.</div></div>';
+    var h='<div class="bb"><div class="bb-track"><span class="sleeve"></span>';
+    b.plates.forEach(function(p){
+      h+='<span class="plate" style="background:'+p.c+';width:'+(p.kg>=10?11:9)+'px;height:'+p.h+'px"></span>';
+    });
+    h+='<span class="collar"></span></div>';
+    var tally={}, order=[];
+    b.plates.forEach(function(p){ if(!tally[p.kg]){tally[p.kg]=0;order.push(p.kg);} tally[p.kg]++; });
+    var note="<em>Per side:</em> "+order.map(function(kg){return tally[kg]+"&times;"+fmt(kg);}).join(" + ");
+    if(b.left>0.01) note+=" &middot; "+fmt(b.left)+" "+unit()+" short";
+    return h+'<div class="bb-note">'+note+'</div></div>';
+  }
+  function logHTML(item,id,wNum,dNum,ww){
+    var val=log[id]!=null?log[id]:"";
+    var last=lastLogged(item.movement,wNum,dNum);
+    var h='<div class="log"><span class="log-lbl">Weight used</span>'
+      + '<span class="log-in"><input type="number" inputmode="decimal" step="0.5" '
+      + 'data-log="'+id+'" value="'+esc(val)+'" placeholder="'+(ww!=null?fmt(ww):"—")+'" '
+      + 'aria-label="Weight used for '+esc(item.movement)+'"><span class="u">'+esc(unit())+'</span></span>';
+    if(last){
+      h+='<div class="last"><span>Last time</span><b>'+esc(last.v)+' '+esc(unit())+'</b></div>';
+      if(String(val)==="") h+='<button class="use-last" data-use="'+id+'" data-v="'+esc(last.v)+'">Use again</button>';
+    } else if(ww!=null && String(val)===""){
+      h+='<button class="use-last" data-use="'+id+'" data-v="'+fmt(ww)+'">Use '+fmt(ww)+'</button>';
+    }
+    return h+'</div>';
+  }
+  function cardHTML(item,idx,wNum,dNum){
+    var meta=SECTIONS[item.section]||{c:"var(--line)"};
+    var id=idOf(wNum,dNum,idx), isDone=!!done[id];
+    var cond=item.section==="Conditioning";
+    var ww=workingWeight(item);
+
+    var h='<article class="card'+(isDone?" done":"")+'" style="--sc:'+meta.c+'" data-id="'+id+'">'
+      + '<div class="card-top"><h3 class="move">'+esc(item.movement||"Coach&rsquo;s call")+'</h3>'
+      + '<button class="tick" aria-label="Mark done" data-tick="'+id+'">'
+      + '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>'
+      + '</button></div>';
+
+    var stats="";
+    if(item.sets) stats+='<div class="stat"><span class="k">Sets</span><span class="v">'+item.sets+'</span></div>';
+    if(item.reps!=null) stats+='<div class="stat"><span class="k">Reps</span><span class="v">'+esc(item.reps)+'</span></div>';
+    if(item.pct) stats+='<div class="stat"><span class="k">% 1RM</span><span class="v">'+Math.round(item.pct*100)+'</span></div>';
+    if(ww!=null) stats+='<div class="stat load"><span class="k">Target</span><span class="v">'+fmt(ww)+'<small>'+esc(unit())+'</small></span></div>';
+    else if(item.pct) stats+='<div class="stat"><span class="k">Target</span><span class="v">&mdash;</span></div>';
+    if(stats) h+='<div class="stats">'+stats+'</div>';
+
+    if(ww!=null) h+=barbellHTML(ww);
+    if(item.notes) h+='<p class="note">'+esc(item.notes)+'</p>';
+    if(!cond && item.movement) h+=logHTML(item,id,wNum,dNum,ww);
+    return h+'</article>';
+  }
+  function bannerHTML(){
+    if(diag.status==="error"){
+      return '<div class="banner warn">'
+        + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>'
+        + '<span>Showing your last saved copy &mdash; couldn&rsquo;t reach the programme just now.</span></div>';
+    }
+    return "";
+  }
+  function render(){
+    renderWeeks(); renderDays();
+    var w=curWeek(), d=curDay(), main=document.getElementById("main");
+    var name=SETUP.client||"";
+    document.getElementById("title").textContent =
+      (name? name+" — ":"") + (CLIENT.label||"Training Block");
+
+    if(!d){
+      main.innerHTML = bannerHTML() +
+        '<p class="empty">No sessions loaded yet.<br>Open the settings panel to check the connection.</p>';
+      return;
+    }
+    var h=bannerHTML();
+    if(w.deload) h+='<div class="deload-flag"><b>Deload</b><span>Lighter on purpose. Move well, leave something in the tank.</span></div>';
+
+    var groups={}, order=[];
+    d.items.forEach(function(it,i){
+      if(!groups[it.section]){ groups[it.section]=[]; order.push(it.section); }
+      groups[it.section].push({item:it,idx:i});
+    });
+    order.sort(function(a,b){ return ((SECTIONS[a]||{order:9}).order)-((SECTIONS[b]||{order:9}).order); });
+    order.forEach(function(s){
+      var meta=SECTIONS[s]||{c:"var(--line)"};
+      h+='<section class="sect"><div class="sect-head"><span class="chip" style="background:'+meta.c+'"></span>'
+       + '<h2>'+esc(s)+'</h2><span class="n">'+groups[s].length+'</span></div>';
+      groups[s].forEach(function(g){ h+=cardHTML(g.item,g.idx,w.week,d.day); });
+      h+='</section>';
+    });
+    main.innerHTML=h;
+
+    var st=dayStats(view.w,view.d);
+    document.getElementById("fab-n").textContent=st.n;
+    document.getElementById("fab-t").textContent=st.t;
+  }
+
+  /* ---------- sync ---------- */
+  function fetchCSV(url){
+    return fetch(url,{cache:"no-store"}).then(function(r){
+      if(!r.ok) throw new Error("HTTP "+r.status);
+      return r.text();
+    }).then(function(t){
+      if(/^\s*<!DOCTYPE|^\s*<html/i.test(t))
+        throw new Error("That link returned a web page, not CSV. Re-copy it from Publish to web and make sure the format is set to CSV.");
+      return parseCSV(t);
+    });
+  }
+
+  function sync(){
+    if(!CLIENT.program){
+      diag.status="unconfigured";
+      diag.msg="No published link set for this client yet.";
+      updateDiag(); return;
+    }
+    var btn=document.getElementById("refresh");
+    btn.classList.add("syncing");
+    diag.status="loading"; updateDiag();
+
+    var setupPromise = CLIENT.setup ? fetchCSV(CLIENT.setup).then(parseSetup)
+                                    : Promise.resolve(SETUP);
+
+    setupPromise.then(function(s){
+      if(s && Object.keys(s.lifts||{}).length===0 && CLIENT.setup)
+        throw new Error("Read the Setup tab but found no 1RMs. Check the Lift Name / 1RM columns.");
+      SETUP=s; save(KEY+":setup",s);
+      return fetchCSV(CLIENT.program);
+    })
+    .then(function(rows){
+      var p=buildProgram(rows, SETUP.lifts, CLIENT.label||"Training Block");
+      if(!p.weeks.length) throw new Error("Found the header row but no session rows underneath it.");
+      PROGRAM=p; save(KEY+":program",p);
+      if(view.w>=PROGRAM.weeks.length) view.w=0;
+      var wk=PROGRAM.weeks[view.w];
+      if(wk && view.d>=wk.days.length) view.d=0;
+      diag.status="ok"; diag.msg=""; diag.at=Date.now();
+      save(KEY+":syncedAt",diag.at);
+      render(); updateDiag();
+    })
+    .catch(function(err){
+      diag.status="error"; diag.msg=err.message||String(err);
+      console.warn("Sync failed:",err);
+      render(); updateDiag();
+    })
+    .then(function(){ btn.classList.remove("syncing"); });
+  }
+
+  function updateDiag(){
+    var el=document.getElementById("diag"), h="";
+    if(diag.status==="loading") h="Checking…";
+    else if(diag.status==="unconfigured") h="<b>Not connected.</b> "+esc(diag.msg);
+    else if(diag.status==="error") h="<b>Couldn&rsquo;t load.</b> "+esc(diag.msg);
+    else if(diag.status==="ok"){
+      var n=PROGRAM.weeks.reduce(function(a,w){
+        return a+w.days.reduce(function(b,d){ return b+d.items.length; },0);
+      },0);
+      h="<b>Connected.</b> "+PROGRAM.weeks.length+" weeks, "+n+" entries. Updated "
+        + new Date(diag.at).toLocaleString()+".";
+      var unmatched={};
+      PROGRAM.weeks.forEach(function(w){ w.days.forEach(function(d){ d.items.forEach(function(it){
+        if(it.pct && !it.lift) unmatched[it.movement]=1;
+      });});});
+      var list=Object.keys(unmatched);
+      if(list.length) h+="<br><b>No 1RM matched:</b> "+esc(list.join(", "))+".";
+    } else h="Not checked yet.";
+    el.innerHTML=h;
+  }
+
+  function renderMaxes(){
+    var el=document.getElementById("maxes-list"), names=Object.keys(SETUP.lifts||{});
+    if(!names.length){ el.innerHTML='<div class="mn">No maxes loaded.</div><div class="mv">&mdash;</div>'; return; }
+    el.innerHTML = names.map(function(n){
+      return '<div class="mn">'+esc(n)+'</div><div class="mv">'+fmt(SETUP.lifts[n])+' '+esc(unit())+'</div>';
+    }).join("");
+  }
+
+  /* ---------- events ---------- */
+  document.getElementById("weeks").addEventListener("click",function(e){
+    var b=e.target.closest("[data-w]"); if(!b) return;
+    view.w=+b.dataset.w; view.d=0; save(KEY+":view",view); render();
+    window.scrollTo({top:0,behavior:"smooth"});
+  });
+  document.getElementById("days").addEventListener("click",function(e){
+    var b=e.target.closest("[data-d]"); if(!b) return;
+    view.d=+b.dataset.d; save(KEY+":view",view); render();
+    window.scrollTo({top:0,behavior:"smooth"});
+  });
+
+  var main=document.getElementById("main");
+  main.addEventListener("click",function(e){
+    var t=e.target.closest("[data-tick]");
+    if(t){
+      var id=t.dataset.tick;
+      if(done[id]) delete done[id]; else done[id]=1;
+      save(KEY+":done",done);
+      t.closest(".card").classList.toggle("done",!!done[id]);
+      document.getElementById("fab-n").textContent=dayStats(view.w,view.d).n;
+      renderDays(); renderWeeks();
+      return;
+    }
+    var u=e.target.closest("[data-use]");
+    if(u){ log[u.dataset.use]=u.dataset.v; save(KEY+":log",log); render(); }
+  });
+  main.addEventListener("change",function(e){
+    var i=e.target.closest("[data-log]"); if(!i) return;
+    var id=i.dataset.log, v=i.value.trim();
+    if(v==="") delete log[id]; else log[id]=v;
+    save(KEY+":log",log);
+  });
+
+  var sheetEl=document.getElementById("sheet"), scrim=document.getElementById("scrim");
+  function openSheet(){
+    renderMaxes(); updateDiag();
+    document.getElementById("s-bar").value=opts.bar;
+    var n=Object.keys(log).length;
+    document.getElementById("log-count").textContent =
+      n ? (n+" weight"+(n===1?"":"s")+" logged across the block.") : "Nothing logged yet.";
+    sheetEl.classList.add("open"); scrim.classList.add("open");
+  }
+  function closeSheet(){ sheetEl.classList.remove("open"); scrim.classList.remove("open"); }
+
+  document.getElementById("open-setup").addEventListener("click",openSheet);
+  document.getElementById("fab").addEventListener("click",openSheet);
+  scrim.addEventListener("click",closeSheet);
+  document.addEventListener("keydown",function(e){ if(e.key==="Escape") closeSheet(); });
+  document.getElementById("refresh").addEventListener("click",function(){ sync(); });
+
+  document.getElementById("save").addEventListener("click",function(){
+    opts={bar:parseFloat(document.getElementById("s-bar").value)};
+    save(KEY+":opts",opts); closeSheet(); render();
+  });
+
+  document.getElementById("export").addEventListener("click",function(){
+    var lines=[(SETUP.client||"")+" — "+(CLIENT.label||""),""];
+    PROGRAM.weeks.forEach(function(w){
+      w.days.forEach(function(d){
+        var rows=[];
+        d.items.forEach(function(it,i){
+          var v=log[idOf(w.week,d.day,i)];
+          if(v!=null&&v!=="") rows.push("  "+it.movement+" — "+v+" "+unit());
+        });
+        if(rows.length){ lines.push("Week "+w.week+", Day "+d.day); lines=lines.concat(rows); lines.push(""); }
+      });
+    });
+    var text=lines.length>2?lines.join("\n"):"Nothing logged yet.";
+    var btn=this, orig=btn.textContent;
+    function flash(m){ btn.textContent=m; setTimeout(function(){btn.textContent=orig;},1800); }
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ flash("Copied — paste it to your coach"); },
+                                              function(){ window.prompt("Copy your log:",text); });
+    } else window.prompt("Copy your log:",text);
+  });
+
+  document.getElementById("reset").addEventListener("click",function(){
+    if(!confirm("Clear every tick and logged weight across the whole block?")) return;
+    done={}; log={};
+    save(KEY+":done",done); save(KEY+":log",log);
+    closeSheet(); render();
+  });
+
+  render();
+  sync();
+})();
+</script>
+</body>
+</html>
